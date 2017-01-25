@@ -34,28 +34,38 @@
     </style>
   </head>
   <body>
+    <p>Please search and select the address from the list below</p>
     <div id="right-panel">
       <form id="pre-form">
         <input id="pre-input" type="text" placeholder="Search your address"></input>
         <button id="pre-submit" type="submit" value="submit">Search</button>
       </form>
       <p id="pre-input-text"></p>
-      <ul id="results"></ul>
+      <form id="results"></form>
+      <p id="myaddress"></p>
     </div>
     <script>
 
        // Retrieves autocomplete predictions programmatically from the Google search
       function initService(inputValue) {
+
+        document.getElementById('results').innerHTML = '';
+
         var displaySuggestions = function(predictions, status) {
           if (status != google.maps.places.PlacesServiceStatus.OK) {
-            alert(status);
+            //alert(status);
+            alert('Sorry we can not find your address on Google list, please put more information about your address');
             return;
           }
-
+          // List all options in to radio
           predictions.forEach(function(prediction) {
-            var li = document.createElement('li');
-            li.appendChild(document.createTextNode(prediction.description));
-            document.getElementById('results').appendChild(li);
+            var inputRadio = '<input type="radio" name="address" value="' + prediction.description + '">' + prediction.description + '<br>';
+            var mainForm = document.getElementById('results'),
+                makeDiv = document.createElement('div');
+
+                makeDiv.innerHTML = inputRadio;
+                mainForm.appendChild(makeDiv);
+
           });
         };
 
@@ -63,21 +73,56 @@
         service.getQueryPredictions({ input: inputValue }, displaySuggestions);
       };
 
+      
+
+      // Input value search
       function getPreValue() {
         
       document.getElementById('pre-submit').addEventListener('click', function(event) {
         event.preventDefault();
         var preInputValue = document.getElementById('pre-input').value;
-        document.getElementById('pre-input-text').innerHTML = preInputValue;
+        //document.getElementById('pre-input-text').innerHTML = preInputValue;
 
-        initService(preInputValue)
+        initService(preInputValue);
+        myAddress();
        
       });
 
       }
 
-      getPreValue();
+      // Get value from radio button
+      function myAddress(){
+        var addressList = document.getElementById('results');
+           addressList.addEventListener('click', function(e) {
+             if (e.target.tagName === 'INPUT'){
+                  var myAddressValue = e.target.value;
+                  //alert(e.target.innerHTML);  // Check if the element is a LI
+                  document.getElementById('myaddress').innerHTML = myAddressValue;
+                }
+           });
 
+      }
+
+      
+
+      /* // Get value from Li
+      function myAddress(){
+        
+        var ul = document.getElementById('results'); 
+
+            ul.addEventListener('click', function(e) {
+                if (e.target.tagName === 'LI'){
+                  var myAddressValue = e.target.innerHTML;
+                  //alert(e.target.innerHTML);  // Check if the element is a LI
+                  document.getElementById('myaddress').innerHTML = myAddressValue;
+                }
+            });
+
+
+      }*/
+
+      getPreValue();
+      
  
     </script>
    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2UzyELYk2dzGoyJGvCSrueFq3gOPEr3I&libraries=places&callback=initService"
