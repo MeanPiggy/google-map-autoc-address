@@ -33,6 +33,7 @@
       }
       #map {
         width: 100%;
+        max-width:500px;
         height:300px;
       }
     </style>
@@ -47,26 +48,27 @@
       <p id="pre-input-text"></p>
       <form id="results"></form>
       <p id="myaddress"></p>
-       <div id="map"></div>
+      <div id="map"></div>
+      <p id="new-address"></p>
     </div>
     <script>
-
-    function initialize() {
- // initMap();
-  initService();
-}
      
+      // Input value search
+      function getPreValue() {
+        document.getElementById('pre-submit').addEventListener('click', function(event) {
+          event.preventDefault();
+          var preInputValue = document.getElementById('pre-input').value;
+          initService(preInputValue);
+          myAddress();
+        });
+      }
 
-
-       // Retrieves autocomplete predictions programmatically from the Google search
+      // Retrieves autocomplete predictions programmatically from the Google search
       function initService(inputValue) {
-
-        document.getElementById('results').innerHTML = '';
-
+        document.getElementById('results').innerHTML = ''; //remove previous results
         var displaySuggestions = function(predictions, status) {
           if (status != google.maps.places.PlacesServiceStatus.OK) {
-            //alert(status);
-            alert('Sorry we can not find your address on Google list, please put more information about your address');
+            alert('Sorry we can not find your address on Google data, please put more information about your address or put the address near by.');
             return;
           }
           // List all options in to radio
@@ -76,80 +78,77 @@
                 makeDiv = document.createElement('div');
                 makeDiv.innerHTML = inputRadio;
                 mainForm.appendChild(makeDiv);
-
-                console.log(prediction.terms);
+                //console.log(prediction.terms);
           });
         };
-
         var service = new google.maps.places.AutocompleteService();
         service.getQueryPredictions({ input: inputValue }, displaySuggestions);
       };
 
-
-      // Input value search
-      function getPreValue() {
-        
-      document.getElementById('pre-submit').addEventListener('click', function(event) {
-        event.preventDefault();
-        var preInputValue = document.getElementById('pre-input').value;
-        //document.getElementById('pre-input-text').innerHTML = preInputValue;
-
-        initService(preInputValue);
-        myAddress();
-       
-      });
-
-      }
-      var myAddressValue = '';
       // Get value from radio button
+      var myAddressValue = '';
       function myAddress(){
         var addressList = document.getElementById('results');
-           addressList.addEventListener('click', function(e) {
-             if (e.target.tagName === 'INPUT'){
-                  myAddressValue = e.target.value;
-                  document.getElementById('myaddress').innerHTML = myAddressValue;
-                  initMap();
-                }
-           });
-
+        addressList.addEventListener('click', function(e) {
+          if (e.target.tagName === 'INPUT'){
+            myAddressValue = e.target.value;
+            document.getElementById('myaddress').innerHTML = myAddressValue;
+            initMap();
+          }
+        });
       }
 
-      getPreValue();
-
-       // Create Google map
+      // Create Google map
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 15
-          //center: {lat: 50.0755, lng: 14.4378}
+          zoom: 15,
+          center: {lat: 50.0755, lng: 14.4378}
         });
         var geocoder = new google.maps.Geocoder();
-
          geocodeAddress(geocoder, map);
-
       }
 
       // Change address to lat and long
       function geocodeAddress(geocoder, resultsMap) {
-        console.log('value address: ' + myAddressValue);
        var address = myAddressValue;
         geocoder.geocode({'address': address}, function(results, status) {
           if (status === 'OK') {
             resultsMap.setCenter(results[0].geometry.location);
             var marker = new google.maps.Marker({
               map: resultsMap,
+              draggable: true,
+              animation: google.maps.Animation.DROP,
               position: results[0].geometry.location
             });
+            console.log(results[0].formatted_address);
+
+            google.maps.event.addListener(marker, 'dragend', function (event) {
+              var positionLat = this.getPosition().lat();
+              var positionLong = this.getPosition().lng();
+              var latlng = {lat: positionLat, lng: positionLong}
+              console.log(latlng);
+              geocoder.geocode({'location': latlng}, function(results, status) {
+                if (status === 'OK') {
+                  console.log('New address: ' + results[0].formatted_address);
+                } else {
+                  console.log('Geocoder failed due to: ' + status);
+                }
+              });
+            });
+
           } else {
-            alert('Geocode was not successful for the following reason: ' + status);
+            console.log('Geocode was not successful for the following reason: ' + status);
           }
         });
       }
-      
- 
+      function initAll(){
+      initMap();
+      getPreValue();
+ }
     </script>
    <!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2UzyELYk2dzGoyJGvCSrueFq3gOPEr3I&libraries=places&callback=initService"
         async defer></script>-->
-     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2UzyELYk2dzGoyJGvCSrueFq3gOPEr3I&libraries=places&callback=initialize"
+     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD2UzyELYk2dzGoyJGvCSrueFq3gOPEr3I&libraries=places&callback=initAll"
         async defer></script>
 
   </body>
