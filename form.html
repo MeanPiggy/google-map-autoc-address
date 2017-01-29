@@ -108,6 +108,13 @@
           predictions.forEach(function(prediction) {
             creatRadio(prediction.description);
           });
+          var inputRadio = '<input type="radio" id="other" name="address" value="Other">Other';
+                var mainForm = document.getElementById('results'),
+                    makeDiv = document.createElement('div');
+                    makeDiv.setAttribute('id', 'wrapfeild');
+                    makeDiv.innerHTML = inputRadio;
+                    mainForm.appendChild(makeDiv);
+                document.getElementById('other').disabled = true;
         };
         var service = new google.maps.places.AutocompleteService();
         service.getQueryPredictions({ input: inputValue }, displaySuggestions);
@@ -123,8 +130,9 @@
             myAddressValue = e.target.value;
             //document.getElementById('myaddress').innerHTML = myAddressValue;
             if(!manualOnce){
-              var elem = document.getElementById('wrapfeild');
-                  elem.parentElement.removeChild(elem);
+              /*8ar elem = document.getElementById('wrapfeild');
+                  elem.parentElement.removeChild(elem);*/
+            document.getElementById('other').disabled = true;
                   manualOnce = true;
             }
             initMap();
@@ -171,13 +179,14 @@
                 }
               // Create Manual address field  
               if(manualOnce){
-                //creatRadio('Other');
-                var textInput = '<p>Please provide use your address follow the pin on the map.</p><input id="manualfield" type="text" name="address-manual" placeholder="Your manual address">';
-                var parent = document.getElementById('manaul-address');
-                childDiv = document.createElement('div');
-                childDiv.setAttribute('id', 'wrapfeild');
-                childDiv.innerHTML = textInput;
-                parent.insertBefore(childDiv,parent.firstChild);
+                /*var inputRadio = '<input type="radio" id="other" name="address" value="Other">Other';
+                var mainForm = document.getElementById('results'),
+                    makeDiv = document.createElement('div');
+                    makeDiv.setAttribute('id', 'wrapfeild');
+                    makeDiv.innerHTML = inputRadio;
+                    mainForm.appendChild(makeDiv);*/
+                document.getElementById('other').disabled = false;
+                document.getElementById('other').checked = true;
                 manualOnce = false;
               }
 
