@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-  <title>Retrieving Autocomplete Predictions</title>
+  <title>Get a Quote form</title>
     <style>
 
       /* Optional: Makes the sample page fill the window. */
@@ -44,6 +44,7 @@
         <p id="pre-input-text"></p>
         <form id="results"></form>
         <p id="myaddress"></p>
+        <form id="manaul-address"></form>
       </div>
       <div class="right">
         <div id="map" ></div>
@@ -72,43 +73,71 @@
         document.getElementById('pre-submit').addEventListener('click', function(event) {
           event.preventDefault();
           var preInputValue = document.getElementById('pre-input').value;
+          var textArea = '<textarea id="address-detail" class="address-area" placeholder="Would you like to put any details about your address"></textarea><br><button id="send-address" type="submit" value="send">Send</button>';
+          document.getElementById('manaul-address').innerHTML = textArea;
           initService(preInputValue);
           myAddress();
         });
       }
+
+      // List radio button function
+      function creatRadio(myValue) {
+        var inputRadio = '<input type="radio" name="address" value="' + myValue + '">' + myValue + '<br>';
+        var mainForm = document.getElementById('results'),
+            makeDiv = document.createElement('div');
+            makeDiv.innerHTML = inputRadio;
+            mainForm.appendChild(makeDiv);
+      }
+
       // Retrieves autocomplete predictions programmatically from the Google search
       function initService(inputValue) {
         document.getElementById('results').innerHTML = ''; //remove previous results
         var displaySuggestions = function(predictions, status) {
           if (status != google.maps.places.PlacesServiceStatus.OK) {
-            alert('Sorry we can not find your address on Google data, please put more information about your address or put the address near by.');
+            alert('Sorry we can not find your address on Google data, please put the address near by and then move the pin on the map to your address');
             return;
           }
           // List all options in to radio
           predictions.forEach(function(prediction) {
-            var inputRadio = '<input type="radio" name="address" value="' + prediction.description + '">' + prediction.description + '<br>';
-            var mainForm = document.getElementById('results'),
-                makeDiv = document.createElement('div');
-                makeDiv.innerHTML = inputRadio;
-                mainForm.appendChild(makeDiv);
-                //console.log(prediction.terms);
+            creatRadio(prediction.description);
           });
+          creatRadio('Manual address');
         };
         var service = new google.maps.places.AutocompleteService();
         service.getQueryPredictions({ input: inputValue }, displaySuggestions);
       };
+
       // Get value from radio button
       var myAddressValue = '';
+      var manualOnce = true;
       function myAddress(){
         var addressList = document.getElementById('results');
         addressList.addEventListener('click', function(e) {
           if (e.target.tagName === 'INPUT'){
             myAddressValue = e.target.value;
             document.getElementById('myaddress').innerHTML = myAddressValue;
+
+            if(myAddressValue === 'Manual address'){
+              if(manualOnce){
+                var textInput = '<input id="manualfield" type="text" name="address-manual">';
+                var parent = document.getElementById('manaul-address');
+                childDiv = document.createElement('div');
+                childDiv.innerHTML = textInput;
+                parent.insertBefore(childDiv,parent.firstChild);
+                manualOnce = false;
+              }
+            }else{
+                if(!manualOnce){
+                  var elem = document.getElementById('manualfield');
+                  elem.parentElement.removeChild(elem);
+                  manualOnce = true;
+                }
+              }
             initMap();
           }
         });
       }
+
       // Create Google map
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
@@ -118,6 +147,7 @@
         var geocoder = new google.maps.Geocoder();
          geocodeAddress(geocoder, map);
       }
+
       // Change address to lat and long
       function geocodeAddress(geocoder, resultsMap) {
        var address = myAddressValue;
