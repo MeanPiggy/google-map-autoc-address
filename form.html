@@ -36,12 +36,13 @@
     <!-- first form -->
     <div class="form-wrapper">
       <div class="left">
-        <p>Please search and select the address from the list below</p>
+        <p>Please search and select the address from the list below.</p>
         <form id="pre-form">
           <input id="pre-input" type="text" placeholder="Search your address"></input>
           <button id="pre-submit" type="submit" value="submit">Search</button>
         </form>
         <p id="pre-input-text"></p>
+        <div id="cant-find-guide"></div>
         <form id="results"></form>
         <p id="myaddress"></p>
         <form id="manaul-address"></form>
@@ -68,8 +69,10 @@
     </div>
     <script>
 //+++++++++ For the first form ++++++++++++++
+      var manualOnce = true;
       // Input value search
       function getPreValue() {
+        
         document.getElementById('pre-submit').addEventListener('click', function(event) {
           event.preventDefault();
           var preInputValue = document.getElementById('pre-input').value;
@@ -77,6 +80,7 @@
           document.getElementById('manaul-address').innerHTML = textArea;
           initService(preInputValue);
           myAddress();
+          manualOnce = true;
         });
       }
 
@@ -91,6 +95,9 @@
 
       // Retrieves autocomplete predictions programmatically from the Google search
       function initService(inputValue) {
+        var textGuide = '<p>If you can not find your address please select the nearby adrress and move the pin on the map to the correct address</p>'
+        document.getElementById('cant-find-guide').innerHTML = textGuide;
+
         document.getElementById('results').innerHTML = ''; //remove previous results
         var displaySuggestions = function(predictions, status) {
           if (status != google.maps.places.PlacesServiceStatus.OK) {
@@ -101,7 +108,6 @@
           predictions.forEach(function(prediction) {
             creatRadio(prediction.description);
           });
-          creatRadio('Manual address');
         };
         var service = new google.maps.places.AutocompleteService();
         service.getQueryPredictions({ input: inputValue }, displaySuggestions);
@@ -109,30 +115,18 @@
 
       // Get value from radio button
       var myAddressValue = '';
-      var manualOnce = true;
+      
       function myAddress(){
         var addressList = document.getElementById('results');
         addressList.addEventListener('click', function(e) {
           if (e.target.tagName === 'INPUT'){
             myAddressValue = e.target.value;
-            document.getElementById('myaddress').innerHTML = myAddressValue;
-
-            if(myAddressValue === 'Manual address'){
-              if(manualOnce){
-                var textInput = '<input id="manualfield" type="text" name="address-manual">';
-                var parent = document.getElementById('manaul-address');
-                childDiv = document.createElement('div');
-                childDiv.innerHTML = textInput;
-                parent.insertBefore(childDiv,parent.firstChild);
-                manualOnce = false;
-              }
-            }else{
-                if(!manualOnce){
-                  var elem = document.getElementById('manualfield');
+            //document.getElementById('myaddress').innerHTML = myAddressValue;
+            if(!manualOnce){
+              var elem = document.getElementById('wrapfeild');
                   elem.parentElement.removeChild(elem);
                   manualOnce = true;
-                }
-              }
+            }
             initMap();
           }
         });
@@ -161,6 +155,7 @@
               position: results[0].geometry.location
             });
             console.log(results[0].formatted_address);
+            // Drag and drop pin
             google.maps.event.addListener(marker, 'dragend', function (event) {
               var positionLat = this.getPosition().lat();
               var positionLong = this.getPosition().lng();
@@ -169,11 +164,23 @@
               geocoder.geocode({'location': latlng}, function(results, status) {
                 if (status === 'OK') {
                   var newResult = results[0].formatted_address;
-                  document.getElementById('myaddress').innerHTML = newResult;
+                  //document.getElementById('myaddress').innerHTML = newResult;
                   console.log(newResult);
                 } else {
                   console.log('Geocoder failed due to: ' + status);
                 }
+              // Create Manual address field  
+              if(manualOnce){
+                //creatRadio('Other');
+                var textInput = '<p>Please provide use your address follow the pin on the map.</p><input id="manualfield" type="text" name="address-manual" placeholder="Your manual address">';
+                var parent = document.getElementById('manaul-address');
+                childDiv = document.createElement('div');
+                childDiv.setAttribute('id', 'wrapfeild');
+                childDiv.innerHTML = textInput;
+                parent.insertBefore(childDiv,parent.firstChild);
+                manualOnce = false;
+              }
+
               });
             });
           } else {
