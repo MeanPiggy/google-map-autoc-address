@@ -76,7 +76,7 @@
         document.getElementById('pre-submit').addEventListener('click', function(event) {
           event.preventDefault();
           var preInputValue = document.getElementById('pre-input').value;
-          var textArea = '<textarea id="address-detail" class="address-area" placeholder="Would you like to put any details about your address"></textarea><br><button id="send-address" type="submit" value="send">Send</button>';
+          var textArea = '<textarea id="address-detail" class="address-area" placeholder="Details about your address"></textarea><br><button id="send-address" type="submit" value="send">Send</button>';
           document.getElementById('manaul-address').innerHTML = textArea;
           initService(preInputValue);
           myAddress();
@@ -109,12 +109,12 @@
             creatRadio(prediction.description);
           });
           var inputRadio = '<input type="radio" id="other" name="address" value="Other">Other';
-                var mainForm = document.getElementById('results'),
-                    makeDiv = document.createElement('div');
-                    makeDiv.setAttribute('id', 'wrapfeild');
-                    makeDiv.innerHTML = inputRadio;
-                    mainForm.appendChild(makeDiv);
-                document.getElementById('other').disabled = true;
+          var mainForm = document.getElementById('results'),
+              makeDiv = document.createElement('div');
+              makeDiv.setAttribute('id', 'wrapfeild');
+              makeDiv.innerHTML = inputRadio;
+              mainForm.appendChild(makeDiv);
+          document.getElementById('other').disabled = true;
         };
         var service = new google.maps.places.AutocompleteService();
         service.getQueryPredictions({ input: inputValue }, displaySuggestions);
@@ -128,10 +128,9 @@
         addressList.addEventListener('click', function(e) {
           if (e.target.tagName === 'INPUT'){
             myAddressValue = e.target.value;
+            document.getElementById('address-detail').required = false;
             //document.getElementById('myaddress').innerHTML = myAddressValue;
             if(!manualOnce){
-              /*8ar elem = document.getElementById('wrapfeild');
-                  elem.parentElement.removeChild(elem);*/
             document.getElementById('other').disabled = true;
                   manualOnce = true;
             }
@@ -165,6 +164,8 @@
             console.log(results[0].formatted_address);
             // Drag and drop pin
             google.maps.event.addListener(marker, 'dragend', function (event) {
+            document.getElementById('address-detail').required = true; 
+            console.log('Hello!');
               var positionLat = this.getPosition().lat();
               var positionLong = this.getPosition().lng();
               var latlng = {lat: positionLat, lng: positionLong}
@@ -179,12 +180,6 @@
                 }
               // Create Manual address field  
               if(manualOnce){
-                /*var inputRadio = '<input type="radio" id="other" name="address" value="Other">Other';
-                var mainForm = document.getElementById('results'),
-                    makeDiv = document.createElement('div');
-                    makeDiv.setAttribute('id', 'wrapfeild');
-                    makeDiv.innerHTML = inputRadio;
-                    mainForm.appendChild(makeDiv);*/
                 document.getElementById('other').disabled = false;
                 document.getElementById('other').checked = true;
                 manualOnce = false;
@@ -197,6 +192,9 @@
           }
         });
       }
+
+
+
 
 //+++++++++ For the second form ++++++++++++++
 // Input value search
